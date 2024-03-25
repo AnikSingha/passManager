@@ -6,12 +6,13 @@ import os
 load_dotenv()
 
 uri = os.getenv("db_string")
-
-client = MongoClient(uri, server_api=ServerApi('1'))
+key = os.getenv("key")
 
 try:
-    client.admin.command('ping')
-    print("Successfully connected to MongoDB!")
+    client = MongoClient(uri, server_api=ServerApi('1'))
 except Exception as e:
     print(e)
-    
+
+
+
+
