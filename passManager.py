@@ -11,12 +11,11 @@ class PassManager:
             key (bytes): The encryption key used for encrypting the data. It should be a 32-byte Fernet key
                          generated using Fernet.generate_key().
         """
-
         self.client = client
         self.key = key
         self.cipher = Fernet(self.key) # used for encryption and decryption
     
-    def decodePasswords(self, passwords):
+    def decode_passwords(self, passwords):
         """
         Decrypts the encrypted passwords stored in the given dictionary.
 
@@ -32,7 +31,7 @@ class PassManager:
         
         return passwords
     
-    def addPassword(self, user, website, password):
+    def add_password(self, user, website, password):
         """
         Encrypts a password and then stores it in the MongoDB passwords collection.
 
@@ -44,8 +43,8 @@ class PassManager:
         Returns:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
-        encryptedPass = self.cipher.encrypt(password.encode('utf-8'))
-        operation = {"$set": {f"accounts.{website}": encryptedPass}}
+        encrypted_pass = self.cipher.encrypt(password.encode('utf-8'))
+        operation = {"$set": {f"accounts.{website}": encrypted_pass}}
 
         try:
             db = self.client["passManager"]
@@ -57,7 +56,7 @@ class PassManager:
 
         return True
     
-    def getPasswords(self, userName):
+    def get_passwords(self, userName):
         """
         Returns a dictionary containing decrypted passwords for a specific user.
 
@@ -75,10 +74,10 @@ class PassManager:
             print(e)
             return False
 
-        return self.decodePasswords(user["accounts"]) # decodes the passwords before returning them
+        return self.decode_passwords(user["accounts"]) # decodes the passwords before returning them
 
 
-    def updatePassword(self, user, website, password):
+    def update_password(self, user, website, password):
         """
         Updates the password for an existing website in the database
 
@@ -91,7 +90,7 @@ class PassManager:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
         try:
-            self.addPassword(user, website, password) # we can simple reuse the addPassword function
+            self.add_password(user, website, password) # we can simply reuse the addPassword function
 
         except Exception as e:
             print(e)
@@ -99,7 +98,7 @@ class PassManager:
 
         return True
     
-    def deletePassword(self, user, website):
+    def delete_password(self, user, website):
         """
         Deletes the credentials for a specific website from the database
 
