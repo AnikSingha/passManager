@@ -23,13 +23,15 @@ class PassManager:
             passwords (dict): A dictionary where the keys represent website names and the values are encrypted passwords.
 
         Returns:
-            dict: An updated passwords dictionary where the values are now decrypted.
+            ret: A multimensional array where every index contains an array in this format ["website", "decrypted password"]
         """
-        for key, val in passwords.items():
+        ret = []
+
+        for key, val in passwords:
             decrypted = self.cipher.decrypt(val).decode() # the decrypted password 
-            passwords[key] = decrypted
+            ret.append([key, decrypted])
         
-        return passwords
+        return ret
     
     def add_password(self, user, website, password):
         """
@@ -44,10 +46,15 @@ class PassManager:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
         encrypted_pass = self.cipher.encrypt(password.encode('utf-8'))
-        operation = {"$set": {f"accounts.{website}": encrypted_pass}}
+        operation = {"$push": {"accounts": [website, encrypted_pass]}}
 
         try:
             db = self.client["passManager"]
+
+            # check if the user exists
+            if db.passwords.find_one({"user": user}) == None:
+                return False
+            
             db.passwords.update_one({"user": user}, operation)
 
         except Exception as e:
@@ -55,6 +62,7 @@ class PassManager:
             return False
 
         return True
+
     
     def get_passwords(self, userName):
         """

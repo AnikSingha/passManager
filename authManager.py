@@ -17,19 +17,26 @@ class AuthManager:
     
     def add_user(self, email, password):
         hashed_pass = self.hash_password(password)
+        operation = {"user" : email, "password" : hashed_pass, "accounts" : []}
 
         try:
             db = self.client["passManager"]
-
-            accounts_collection = db["accounts"]
             password_collection = db["passwords"]
 
-            accounts_collection.insert_one({email : hashed_pass})
-            password_collection.insert_one()
+            if password_collection.find_one({"user" : email}) != None:
+                return False
+            
+            password_collection.insert_one(operation)
 
         except Exception as e:
-            pass
+            print(e)
+            return False
+        
+        return True
 
+x = AuthManager(client)
+
+x.add_user("test@gmail.com", "Anik123")
 
             
 
