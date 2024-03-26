@@ -25,11 +25,13 @@ class PassManager:
         Returns:
             dict: An updated passwords dictionary where the values are now decrypted.
         """
+        decPasswords = {}
+
         for key, val in passwords.items():
             decrypted = self.cipher.decrypt(val).decode() # the decrypted password 
-            passwords[key] = decrypted
+            decPasswords[key.replace('|', '.')] = decrypted
         
-        return passwords
+        return decPasswords
     
     def add_password(self, user, website, password):
         """
@@ -42,9 +44,12 @@ class PassManager:
 
         Returns:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
+
+        Notes:
+            If there is an existing entry for the website then the password is updated
         """
         encrypted_pass = self.cipher.encrypt(password.encode('utf-8'))
-        website = website.replace('.', '-')
+        website = website.replace('.', '|')
         operation = {"$set": {f"accounts.{website}": encrypted_pass}}
 
         try:
@@ -94,7 +99,7 @@ class PassManager:
         Returns:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
-        website = website.replace('.', '-')
+        website = website.replace('.', '|')
 
         try:
             self.add_password(user, website, password) # we can simply reuse the addPassword function
@@ -116,7 +121,7 @@ class PassManager:
         Returns:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
-        website = website.replace('.', '-')
+        website = website.replace('.', '|')
         operation = {"$unset" : {f"accounts.{website}" : ""}}
 
         try:
