@@ -23,7 +23,7 @@ class AuthManager:
             db = self.client["passManager"]
             password_collection = db["passwords"]
 
-            if password_collection.find_one({"user" : email}) != None:
+            if password_collection.find_one({"user" : email}) != None: # Check if this user already exists
                 return False
             
             password_collection.insert_one(operation)
@@ -33,3 +33,14 @@ class AuthManager:
             return False
         
         return True    
+    
+    def login(self, email, password):
+        try:
+            db = self.client["passManager"]
+            hash = db.passwords.find_one({"user" : email}, {"password" : 1, "_id" : 0})["password"]
+            
+            return self.check_password(password, hash)
+        
+        except Exception as e:
+            print(e)
+            return False
