@@ -105,10 +105,18 @@ class PassManager:
         Returns:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
+        encrypted_pass = self.cipher.encrypt(password.encode('utf-8'))
         website = website.replace('.', '|')
+        operation = {"$set": {f"accounts.{website}": encrypted_pass}}
 
         try:
-            self.add_password(user, website, password) # we can simply reuse the addPassword function
+            db = self.client["passManager"]
+
+            if db.passwords.find_one({"user" : user}) == None: # Check if user exists
+                return False
+            
+            db.passwords.update_one({"user": user}, operation)
+
 
         except Exception as e:
             print(e)
