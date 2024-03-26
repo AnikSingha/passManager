@@ -1,6 +1,7 @@
 from cryptography.fernet import Fernet
 from pymongo.mongo_client import MongoClient
 from typing import Union
+
 class PassManager:
 
     def __init__(self, client: MongoClient, key: bytes):

@@ -1,8 +1,9 @@
+from pymongo.mongo_client import MongoClient
 import bcrypt
 
 class AuthManager:
 
-    def __init__(self, client):
+    def __init__(self, client: MongoClient):
         """
         Initializes an AuthManager object with the provided MongoDB Client
 
@@ -11,7 +12,7 @@ class AuthManager:
         """
         self.client = client
 
-    def hash_password(self, password):
+    def hash_password(self, password: str) -> bytes:
         """
         Creates a secure hash for the provided password
 
@@ -25,7 +26,7 @@ class AuthManager:
         hashed = bcrypt.hashpw(encoded, bcrypt.gensalt())
         return hashed
     
-    def check_password(self, password, hash):
+    def check_password(self, password: str, hash: bytes) -> bool:
         """
         Checks the password against the hash to see if it matches
 
@@ -39,7 +40,7 @@ class AuthManager:
         encoded = password.encode('utf-8')
         return bcrypt.checkpw(encoded, hash)
     
-    def add_user(self, email, password):
+    def add_user(self, email: str, password: str) -> bool:
         """
         Creates a new user and adds an entry for them in the database
 
@@ -68,7 +69,7 @@ class AuthManager:
         
         return True    
     
-    def login(self, email, password):
+    def login(self, email: str, password: str) -> bool:
         """
         Determines whether we should allow a user to login
 
@@ -92,7 +93,7 @@ class AuthManager:
             print(e)
             return False
         
-    def reset_password(self, email, password):
+    def reset_password(self, email: str, password: str) -> bool:
         """
         Resets a user's password 
 
@@ -119,4 +120,3 @@ class AuthManager:
         except Exception as e:
             print(e)
             return False
-
