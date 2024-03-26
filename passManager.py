@@ -23,15 +23,13 @@ class PassManager:
             passwords (dict): A dictionary where the keys represent website names and the values are encrypted passwords.
 
         Returns:
-            ret: A multimensional array where every index contains an array in this format ["website", "decrypted password"]
+            dict: An updated passwords dictionary where the values are now decrypted.
         """
-        ret = []
-
-        for key, val in passwords:
+        for key, val in passwords.items():
             decrypted = self.cipher.decrypt(val).decode() # the decrypted password 
-            ret.append([key, decrypted])
+            passwords[key] = decrypted
         
-        return ret
+        return passwords
     
     def add_password(self, user, website, password):
         """
@@ -46,13 +44,13 @@ class PassManager:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
         encrypted_pass = self.cipher.encrypt(password.encode('utf-8'))
-        operation = {"$push": {"accounts": [website, encrypted_pass]}}
+        website = website.replace('.', '-')
+        operation = {"$set": {f"accounts.{website}": encrypted_pass}}
 
         try:
             db = self.client["passManager"]
 
-            # check if the user exists
-            if db.passwords.find_one({"user": user}) == None:
+            if db.passwords.find_one({"user" : user}) == None: # Check if user exists
                 return False
             
             db.passwords.update_one({"user": user}, operation)
@@ -62,7 +60,6 @@ class PassManager:
             return False
 
         return True
-
     
     def get_passwords(self, userName):
         """
@@ -97,6 +94,8 @@ class PassManager:
         Returns:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
+        website = website.replace('.', '-')
+
         try:
             self.add_password(user, website, password) # we can simply reuse the addPassword function
 
@@ -117,10 +116,15 @@ class PassManager:
         Returns:
             bool: A boolean representing whether the function succeeded or failed in updating the database.
         """
+        website = website.replace('.', '-')
         operation = {"$unset" : {f"accounts.{website}" : ""}}
 
         try:
             db = self.client["passManager"]
+
+            if db.passwords.find_one({"user" : user}) == None: # Check if user exists
+                return False
+            
             db.passwords.update_one({"user" : user}, operation)
         
         except Exception as e:

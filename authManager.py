@@ -17,7 +17,7 @@ class AuthManager:
     
     def add_user(self, email, password):
         hashed_pass = self.hash_password(password)
-        operation = {"user" : email, "password" : hashed_pass, "accounts" : []}
+        operation = {"user" : email, "password" : hashed_pass, "accounts" : {}}
 
         try:
             db = self.client["passManager"]
@@ -32,12 +32,4 @@ class AuthManager:
             print(e)
             return False
         
-        return True
-
-x = AuthManager(client)
-
-x.add_user("test@gmail.com", "Anik123")
-
-            
-
-    
+        return True    

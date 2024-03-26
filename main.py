@@ -3,4 +3,6 @@ from passManager import PassManager
 from authManager import AuthManager
 
 x = PassManager(client, key)
-a = AuthManager(client)
+y = AuthManager(client)
+
+print(x.add_password('dont', 'ani', '1'))
