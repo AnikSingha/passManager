@@ -7,7 +7,7 @@ class PassManager:
         Initializes a PassManager object with the provided MongoDB client.
 
         Parameters:
-            client: A MongoDB client object used for storing and retrieving password data.
+            client (MongoClient): A MongoDB client object used for storing and retrieving password data.
             key (bytes): The encryption key used for encrypting the data. It should be a 32-byte Fernet key
                          generated using Fernet.generate_key().
         """
