@@ -1,8 +1,9 @@
 from cryptography.fernet import Fernet
-
+from pymongo.mongo_client import MongoClient
+from typing import Union
 class PassManager:
 
-    def __init__(self, client, key):
+    def __init__(self, client: MongoClient, key: bytes):
         """
         Initializes a PassManager object with the provided MongoDB client.
 
@@ -15,7 +16,7 @@ class PassManager:
         self.key = key
         self.cipher = Fernet(self.key) # used for encryption and decryption
     
-    def decode_passwords(self, passwords):
+    def decode_passwords(self, passwords: str) -> dict:
         """
         Decrypts the encrypted passwords stored in the given dictionary.
 
@@ -33,7 +34,7 @@ class PassManager:
         
         return decPasswords
     
-    def add_password(self, user, website, password):
+    def add_password(self, user: str, website: str, password: str) -> bool:
         """
         Encrypts a password and then stores it in the MongoDB passwords collection.
 
@@ -66,7 +67,7 @@ class PassManager:
 
         return True
     
-    def get_passwords(self, userName):
+    def get_passwords(self, userName: str) -> Union[dict, None]:
         """
         Returns a dictionary containing decrypted passwords for a specific user.
 
@@ -74,11 +75,15 @@ class PassManager:
             userName (str): The username of the user whose passwords we want to retrieve.
 
         Returns:
-            dict: A dictionary where the keys are the names of websites and the values are the decrypted passwords.
+            Union[dict, None]: A dictionary where the keys are the names of websites and the values are the decrypted passwords,
+            or None if there was an error retrieving the passwords.
         """
         try:
             db = self.client["passManager"]
             user = db.passwords.find_one({"user" : userName})
+
+            if user == None:
+                return False
 
         except Exception as e:
             print(e)
@@ -87,7 +92,7 @@ class PassManager:
         return self.decode_passwords(user["accounts"]) # decodes the passwords before returning them
 
 
-    def update_password(self, user, website, password):
+    def update_password(self, user: str, website: str, password: str) -> bool:
         """
         Updates the password for an existing website in the database
 
@@ -110,7 +115,7 @@ class PassManager:
 
         return True
     
-    def delete_password(self, user, website):
+    def delete_password(self, user: str, website: str) -> bool:
         """
         Deletes the credentials for a specific website from the database
 
