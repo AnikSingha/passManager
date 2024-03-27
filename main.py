@@ -3,8 +3,8 @@ from authManager import AuthManager
 from dbClient import client, key   
 from flask import Flask, request
 
-x = PassManager(client, key)
-y = AuthManager(client)
+pass_manager = PassManager(client, key)
+auth_manager = AuthManager(client)
 
 app = Flask(__name__)
 
@@ -15,4 +15,5 @@ def register():
     #print(email, password)
     return "Hello"
     
-app.run()
+if __name__ == "__main__":
+    app.run()

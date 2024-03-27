@@ -7,6 +7,7 @@ load_dotenv()
 
 uri = os.getenv("db_string")
 key = os.getenv("key")
+oauth_key = os.getenv("oauth_key")
 
 try:
     client = MongoClient(uri, server_api=ServerApi('1'))

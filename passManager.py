@@ -11,11 +11,10 @@ class PassManager:
         Parameters:
             client (MongoClient): A MongoDB client object used for storing and retrieving password data.
             key (bytes): The encryption key used for encrypting the data. It should be a 32-byte Fernet key
-                         generated using Fernet.generate_key().
+                            generated using Fernet.generate_key().
         """
         self.client = client
-        self.key = key
-        self.cipher = Fernet(self.key) # used for encryption and decryption
+        self.cipher = Fernet(key) # used for encryption and decryption
     
     def decode_passwords(self, passwords: str) -> dict:
         """

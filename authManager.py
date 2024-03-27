@@ -1,5 +1,5 @@
-from pymongo.mongo_client import MongoClient
 import bcrypt
+from pymongo.mongo_client import MongoClient
 
 class AuthManager:
 
