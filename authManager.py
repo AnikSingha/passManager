@@ -1,5 +1,7 @@
 import bcrypt
 from pymongo.mongo_client import MongoClient
+from dbClient import oauth_key
+from oauth import OAuth
 
 class AuthManager:
 
@@ -51,9 +53,9 @@ class AuthManager:
         Returns:
             bool: Returns True if the user was succesfully added to the database and False otherwise
         """
+        o_auth = OAuth(oauth_key, self.client)
         hashed_pass = self.hash_password(password)
-        operation = {"user" : email, "password" : hashed_pass, "accounts" : {}}
-
+        operation = {"user" : email, "password" : hashed_pass, "OAuth_key" : o_auth.create_otp_key(), "accounts" : {}}
         try:
             db = self.client["passManager"]
             password_collection = db["passwords"]
@@ -92,7 +94,7 @@ class AuthManager:
         except Exception as e:
             print(e)
             return False
-        
+    
     def reset_password(self, email: str, password: str) -> bool:
         """
         Resets a user's password 
