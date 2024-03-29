@@ -22,6 +22,7 @@ def register():
 @app.route('/qr', methods={"GET"})
 def testQR():
     email = request.args.get('email')
+    print(email)
     qr_bytes = oauth_manager.gen_qrcode(email)
 
     if qr_bytes:

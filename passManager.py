@@ -6,7 +6,7 @@ class PassManager:
 
     def __init__(self, client: MongoClient, key: bytes):
         """
-        Initializes a PassManager object with the provided MongoDB client.
+        Initializes a PassManager object with the provided MongoDB client and encryption key.
 
         Parameters:
             client (MongoClient): A MongoDB client object used for storing and retrieving password data.
