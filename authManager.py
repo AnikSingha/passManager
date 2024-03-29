@@ -79,31 +79,37 @@ class AuthManager:
         
         return True, "Use successfully created"
     
-    def login(self, email: str, password: str) -> bool:
+    def login(self, email: str, password: str) -> tuple[bool, str]:
         """
-        Determines whether we should allow a user to login
+        Attempts to log a user in
+        Compares the provided password to the hash stores in the database
 
         Parameters:
             email (str): The user's email
             password (str): The user's password, will be matched against a hash
 
         Returns:
-            bool: A boolean determining whether the user was allowed to login
+            tuple[bool, str]: A boolean determining whether the user was succesfully able to log in
+                                and a string with more detailed information
         """
         try:
             db = self.client["passManager"]
-            hash = db.passwords.find_one({"user" : email}, {"password" : 1, "_id" : 0})
+            hashed_pass = db.passwords.find_one({"user" : email}, {"password" : 1, "_id" : 0})
 
-            if hash == None: # Trips when the user doesn't exist
-                return False
+            if hashed_pass == None: # Trips when the user doesn't exist
+                return False, "User doesn't exist"
             
-            return self.check_password(password, hash["password"])
+            valid = self.check_password(password, hashed_pass["password"])
+
+            if not valid:
+                return False, "Login failed: The password was incorrect"
+            
+            return True, "Login Successful"
         
         except Exception as e:
-            print(e)
-            return False
+            return False, "Login failed: " + str(e)
     
-    def reset_password(self, email: str, password: str) -> bool:
+    def reset_password(self, email: str, password: str) -> tuple[bool, str]:
         """
         Resets a user's password 
 
@@ -112,21 +118,22 @@ class AuthManager:
             password (str): THe user's new desired password
 
         Returns:
-            bool: Returns True if the database update was succesful and False otherwise
+            tuple[bool, str]: Returns True if the database update was succesful and False otherwise
+                                A string containing more detailed information is also provided
         """
         hashed_password = self.hash_password(password)
+        operation = {"$set": {"password": hashed_password}}
 
         try:
             db = self.client["passManager"]
             password_collection = db["passwords"]
             
             if password_collection.find_one({"user" : email}) == None: # Check if this user doesn't exist
-                return False
+                return False, "User doesn't exist"
             
-            password_collection.update_one({"user" : email}, {"$set": {"password": hashed_password}})
+            password_collection.update_one({"user" : email}, operation)
             
-            return True
+            return True, "Password was succesfully reset"
 
         except Exception as e:
-            print(e)
-            return False
+            return False, "Unsuccesful operation: " + str(e)
