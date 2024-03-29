@@ -2,6 +2,7 @@ import bcrypt
 from pymongo.mongo_client import MongoClient
 from dbClient import oauth_key
 from oauth import OAuth
+import re
 
 class AuthManager:
 
@@ -42,7 +43,7 @@ class AuthManager:
         encoded = password.encode('utf-8')
         return bcrypt.checkpw(encoded, hash)
     
-    def add_user(self, email: str, password: str) -> bool:
+    def add_user(self, email: str, password: str) -> tuple[bool, str]:
         """
         Creates a new user and adds an entry for them in the database
 
@@ -51,25 +52,32 @@ class AuthManager:
             password (str): The user's desired password
 
         Returns:
-            bool: Returns True if the user was succesfully added to the database and False otherwise
+            tuple[bool, str]: Returns a boolean indicating whether the database operation was successful
+                                or not and a string with more detailed information
         """
         o_auth = OAuth(self.client, oauth_key)
         hashed_pass = self.hash_password(password)
         operation = {"user" : email, "password" : hashed_pass, "OAuth_key" : o_auth.create_otp_key(), "accounts" : {}}
+
+        pattern = "^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$"
+        valid = re.match(pattern, email) # input validaiton on the email
+
+        if not valid:
+            return False, "Email is invalid or contains mistakes"
+
         try:
             db = self.client["passManager"]
             password_collection = db["passwords"]
 
             if password_collection.find_one({"user" : email}) != None: # Check if this user already exists
-                return False
+                return False, "User already exists"
             
             password_collection.insert_one(operation)
 
         except Exception as e:
-            print(e)
-            return False
+            return False, "User registration failed: " + str(e)
         
-        return True    
+        return True, "Use successfully created"
     
     def login(self, email: str, password: str) -> bool:
         """
