@@ -53,7 +53,7 @@ class AuthManager:
         Returns:
             bool: Returns True if the user was succesfully added to the database and False otherwise
         """
-        o_auth = OAuth(oauth_key, self.client)
+        o_auth = OAuth(self.client, oauth_key)
         hashed_pass = self.hash_password(password)
         operation = {"user" : email, "password" : hashed_pass, "OAuth_key" : o_auth.create_otp_key(), "accounts" : {}}
         try:
