@@ -88,8 +88,8 @@ class PassManager:
 
         return True, self.decode_passwords(user["accounts"]) # decodes the passwords before returning them
 
-
-    def update_password(self, user: str, website: str, password: str) -> bool:
+    # Note to self: Add a check to see if the website exists inside accounts
+    def update_password(self, user: str, website: str, password: str) -> tuple[bool, str]:
         """
         Updates the password for an existing website in the database
 
@@ -99,7 +99,8 @@ class PassManager:
             password (str): The unencrypted password we will encrypt and place into the database.
 
         Returns:
-            bool: A boolean representing whether the function succeeded or failed in updating the database.
+            tuple[bool, str]: A boolean representing whether the function succeeded or failed in updating the database
+                                and a string containing more detailed information
         """
         encrypted_pass = self.cipher.encrypt(password.encode('utf-8'))
         website = website.replace('.', '|')
@@ -109,18 +110,18 @@ class PassManager:
             db = self.client["passManager"]
 
             if db.passwords.find_one({"user" : user}) == None: # Check if user exists
-                return False
+                return False, "User doesn't exist"
             
             db.passwords.update_one({"user": user}, operation)
 
 
         except Exception as e:
-            print(e)
-            return False
+            return False, "Update unsuccesful: " + str(e)
 
-        return True
+        return True, "Update succesful"
     
-    def delete_password(self, user: str, website: str) -> bool:
+    # Add a check to see if the website exists inside accounts
+    def delete_password(self, user: str, website: str) -> tuple[bool, str]:
         """
         Deletes the credentials for a specific website from the database
 
@@ -129,7 +130,8 @@ class PassManager:
             website (str): The name of the website.
 
         Returns:
-            bool: A boolean representing whether the function succeeded or failed in updating the database.
+           tuple[bool, str]: A boolean representing whether the function succeeded or failed in updating the database.
+                                A string with more detailed information
         """
         website = website.replace('.', '|')
         operation = {"$unset" : {f"accounts.{website}" : ""}}
@@ -138,12 +140,11 @@ class PassManager:
             db = self.client["passManager"]
 
             if db.passwords.find_one({"user" : user}) == None: # Check if user exists
-                return False
+                return False, "User doesn't exist"
             
             db.passwords.update_one({"user" : user}, operation)
         
         except Exception as e:
-            print(e)
-            return False
+            return False, "Deletion failed: " + str(e)
         
-        return True
+        return True, "Account succesfully deleted"
