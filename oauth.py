@@ -109,7 +109,7 @@ class OAuth:
         except Exception as e:
             return False, "Error: " + str(e)
         
-    def gen_qrcode(self, user: str) -> BytesIO:
+    def gen_qrcode(self, user: str) -> tuple[bool, Union[BytesIO, str]]:
         """
         Generates a qr code which can be used by an authenticator app to
         display the generated OTP code
@@ -118,7 +118,9 @@ class OAuth:
             user (str): The username/email of the user
 
         Returns:
-            BytesIO: The qr code is turned into a BytesIO so it can be sent over the web
+            tuple[bool, Union[BytesIO, str]]: A boolean representing whether the function succeeded is returned.
+                                                The qr code is turned into a BytesIO so it can be sent over the web
+                                                If the operation was unsuccesful then a string will be sent
         """
         try:
             key = self.get_key(user)
@@ -132,9 +134,8 @@ class OAuth:
             qr_image.save(qr_bytes)
             qr_bytes.seek(0)
 
-            return qr_bytes
+            return True, qr_bytes
         
         except Exception as e:
-            print(f"Error generating QR code: {e}")
-            return None
+            return False, "Unable to generate qr code: " + str(e)
 
