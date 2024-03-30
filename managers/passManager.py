@@ -88,7 +88,6 @@ class PassManager:
 
         return True, self.decode_passwords(user["accounts"]) # decodes the passwords before returning them
 
-    # Note to self: Add a check to see if the website exists inside accounts
     def update_password(self, user: str, website: str, password: str) -> tuple[bool, str]:
         """
         Updates the password for an existing website in the database
@@ -120,7 +119,6 @@ class PassManager:
 
         return True, "Update succesful"
     
-    # Add a check to see if the website exists inside accounts
     def delete_password(self, user: str, website: str) -> tuple[bool, str]:
         """
         Deletes the credentials for a specific website from the database

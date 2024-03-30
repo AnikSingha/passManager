@@ -1,7 +1,7 @@
 import bcrypt
 from pymongo.mongo_client import MongoClient
 from dbClient import oauth_key
-from oauth import OAuth
+from managers.oauth import OAuth
 import re
 
 class AuthManager:
