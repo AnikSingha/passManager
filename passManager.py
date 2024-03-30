@@ -34,7 +34,7 @@ class PassManager:
         
         return decPasswords
     
-    def add_password(self, user: str, website: str, password: str) -> bool:
+    def add_password(self, user: str, website: str, password: str) -> tuple[bool, str]:
         """
         Encrypts a password and then stores it in the MongoDB passwords collection.
 
@@ -44,10 +44,8 @@ class PassManager:
             password (str): The unencrypted password we will encrypt and place into the database.
 
         Returns:
-            bool: A boolean representing whether the function succeeded or failed in updating the database.
-
-        Notes:
-            If there is an existing entry for the website then the password is updated
+            tuple[bool, str] : A boolean representing whether the function succeeded or failed in updating the database
+                                and a string with a detailed message
         """
         encrypted_pass = self.cipher.encrypt(password.encode('utf-8'))
         website = website.replace('.', '|')
@@ -57,17 +55,16 @@ class PassManager:
             db = self.client["passManager"]
 
             if db.passwords.find_one({"user" : user}) == None: # Check if user exists
-                return False
+                return False, "User doesn't exist"
             
             db.passwords.update_one({"user": user}, operation)
 
         except Exception as e:
-            print(e)
-            return False
+            return False, "Failed: " + str(e)
 
-        return True
+        return True, "Account successfully added"
     
-    def get_passwords(self, userName: str) -> Union[dict, None]:
+    def get_passwords(self, userName: str) -> tuple[bool, Union[dict, str]]:
         """
         Returns a dictionary containing decrypted passwords for a specific user.
 
@@ -75,21 +72,21 @@ class PassManager:
             userName (str): The username of the user whose passwords we want to retrieve.
 
         Returns:
-            Union[dict, None]: A dictionary where the keys are the names of websites and the values are the decrypted passwords,
-            or None if there was an error retrieving the passwords.
+            tuple[bool, Union[str, dict]] : The first item returned is a boolean representing whether the 
+                database operation succeeded or not. If it succeeded then a dictionary with all the account
+                credentials will be returned, otherwise a string detailing what went werong will be returned.
         """
         try:
             db = self.client["passManager"]
             user = db.passwords.find_one({"user" : userName})
 
             if user == None:
-                return False
+                return False, "User doesn't exist"
 
         except Exception as e:
-            print(e)
-            return False
+            return False, "Unsuccesful: " + str(e)
 
-        return self.decode_passwords(user["accounts"]) # decodes the passwords before returning them
+        return True, self.decode_passwords(user["accounts"]) # decodes the passwords before returning them
 
 
     def update_password(self, user: str, website: str, password: str) -> bool:
