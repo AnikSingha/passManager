@@ -15,6 +15,10 @@ app.register_blueprint(oauth_bp, url_prefix="/oauth")
 def home():
     return 'Testing route'
 
+@app.route('/test')
+def test():
+    return '<h1>Testing</h1>'
+
 
 if __name__ == "__main__":
     app.run()
