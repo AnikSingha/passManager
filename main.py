@@ -5,7 +5,7 @@ from blueprints.pass_bp import pass_bp
 from blueprints.oauth_bp import oauth_bp
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins='*')
 
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(pass_bp, url_prefix="/password_management")
