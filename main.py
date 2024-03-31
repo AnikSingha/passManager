@@ -11,6 +11,10 @@ app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(pass_bp, url_prefix="/password_management")
 app.register_blueprint(oauth_bp, url_prefix="/oauth")
 
+@app.route('/')
+def home():
+    return 'Testing route'
+
 
 if __name__ == "__main__":
     app.run()
