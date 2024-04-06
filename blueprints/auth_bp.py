@@ -29,8 +29,6 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    print(email, password)
-
     result, message = auth_manager.login(email,  password)
 
     if result:
