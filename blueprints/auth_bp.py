@@ -8,8 +8,9 @@ auth_manager = AuthManager(client)
 
 @auth_bp.route('/register', methods=["POST"])
 def register():
-    email = request.form.get('email')       # Must be changed to request.forms when code is sent to production
-    password = request.form.get('password')
+    data = request.json
+    email = data.get('email')    
+    password = data.get('password')
 
     result, message = auth_manager.add_user(email, password)
 
@@ -24,8 +25,11 @@ def register():
 
 @auth_bp.route('/login', methods=["POST"])
 def login():
-    email = request.form.get('email')
-    password = request.form.get('password')
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    print(email, password)
 
     result, message = auth_manager.login(email,  password)
 
@@ -40,7 +44,8 @@ def login():
 
 @auth_bp.route('/reset_password', methods=["PUT"])
 def reset_password():
-    email = request.args.get('email')
+    data = request.json
+    email = data.get('email')    
     new_password = request.args.get('new_password')
 
     result, message = auth_manager.reset_password(email, new_password)

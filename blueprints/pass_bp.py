@@ -8,9 +8,10 @@ pass_manager = PassManager(client, key)
 
 @pass_bp.route('/add_account', methods=["POST"])
 def add_account():
-    email = request.form.get('email')
-    website = request.form.get('website')
-    password = request.form.get('password')
+    data = request.json
+    email = data.get('email')    
+    website = data.get('website')
+    password = data.get('password')
 
     result, message = pass_manager.add_password(email, website, password)
 
@@ -25,7 +26,8 @@ def add_account():
 
 @pass_bp.route('get_accounts', methods=["POST"])
 def get_accounts():
-    email = request.form.get('email')
+    data = request.json
+    email = data.get('email')    
 
     result, message = pass_manager.get_passwords(email)
     
@@ -40,9 +42,10 @@ def get_accounts():
 
 @pass_bp.route('update_password', methods=["PUT"])
 def update_password():
-    email = request.form.get('email')
-    website = request.form.get('website')
-    new_password = request.form.get('new_password')
+    data = request.json
+    email = data.get('email')    
+    website = data.get('website')
+    new_password = data.get('new_password')
 
     result, message = pass_manager.update_password(email, website, new_password)
 
@@ -57,8 +60,9 @@ def update_password():
 
 @pass_bp.route('delete_account', methods=["POST"])
 def delete_account():
-    email = request.form.get('email')
-    website = request.form.get('website')
+    data = request.json
+    email = data.get('email')    
+    website = data.get('website')
 
     result, message = pass_manager.delete_password(email, website)
 

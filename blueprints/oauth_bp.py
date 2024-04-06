@@ -9,8 +9,9 @@ oauth_manager = OAuth(client, oauth_key)
 
 @oauth_bp.route('/verify_otp', methods=["POST"])
 def verify_otp():
-    email = request.form.get("email")
-    code = request.form.get("code")
+    data = request.json
+    email = data.get('email')    
+    code = data.get('code')
     
     result, message = oauth_manager.verify_code(email, code)
     
@@ -25,7 +26,8 @@ def verify_otp():
 
 @oauth_bp.route('/create_qr', methods=["POST"])
 def create_qr():
-    email = request.form.get('email')
+    data = request.json
+    email = data.get('email')    
     
     result, message = oauth_manager.gen_qrcode(email)
 
