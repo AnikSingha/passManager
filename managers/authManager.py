@@ -98,7 +98,7 @@ class AuthManager:
         except Exception as e:
             return False, "Failed to create new uuid: " + str(e)
 
-    def add_user(self, email: str, password: str) -> tuple[bool, str], str:
+    def add_user(self, email: str, password: str) -> tuple[bool, str, str]:
         """
         Creates a new user and adds an entry for them in the database
 
