@@ -94,10 +94,11 @@ class AuthManager:
         try:
             db.passwords.update_one({"user" : user}, operation)
             return True, new_id
+        
         except Exception as e:
             return False, "Failed to create new uuid: " + str(e)
 
-    def add_user(self, email: str, password: str) -> tuple[bool, str]:
+    def add_user(self, email: str, password: str) -> tuple[bool, str], str:
         """
         Creates a new user and adds an entry for them in the database
 
@@ -107,32 +108,33 @@ class AuthManager:
 
         Returns:
             tuple[bool, str]: Returns a boolean indicating whether the database operation was successful
-                                or not and a string with more detailed information
+                                or not, a string with more detailed information, and a string with the session_id
         """
         o_auth = OAuth(self.client, oauth_key)
         hashed_pass = self.hash_password(password)
+        session_id = str(uuid.uuid4())
         operation = {"user" : email, "password" : hashed_pass, "OAuth_key" : o_auth.create_otp_key(),
-                      "accounts" : {}, "session_id" : str(uuid.uuid4())}
+                      "accounts" : {}, "session_id" : session_id}
 
         pattern = "^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$"
         valid = re.match(pattern, email) # input validaiton on the email
 
         if not valid:
-            return False, "Email is invalid or contains mistakes"
+            return False, "Email is invalid or contains mistakes", "No session id"
 
         try:
             db = self.client["passManager"]
             password_collection = db["passwords"]
 
             if password_collection.find_one({"user" : email}) != None: # Check if this user already exists
-                return False, "User already exists"
+                return False, "User already exists", "No new session id was generated"
             
             password_collection.insert_one(operation)
 
         except Exception as e:
             return False, "User registration failed: " + str(e)
         
-        return True, "User successfully created"
+        return True, "User successfully created", session_id
     
     def login(self, email: str, password: str) -> tuple[bool, str]:
         """

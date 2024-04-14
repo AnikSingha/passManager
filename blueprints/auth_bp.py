@@ -12,7 +12,7 @@ def register():
     email = data.get('email')    
     password = data.get('password')
 
-    result, message = auth_manager.add_user(email, password)
+    result, message, session_id = auth_manager.add_user(email, password)
 
     if result:
         response = {"success": True, "message": message}
@@ -21,7 +21,11 @@ def register():
         response = {"success": False, "message": message}
         status_code = 400 
 
-    return make_response(jsonify(response), status_code)
+    res = make_response(jsonify(response), status_code)
+    res.set_cookie('user', email)
+    res.set_cookie('session_id', session_id, httponly=True)
+    
+    return res
 
 @auth_bp.route('/login', methods=["POST"])
 def login():
@@ -38,7 +42,13 @@ def login():
         response = {"success": False, "message": message}
         status_code = 400 
 
-    return make_response(jsonify(response), status_code)
+    _ , session_id = auth_manager.new_session(email)
+    res = make_response(jsonify(response), status_code)
+
+    res.set_cookie('user', email)
+    res.set_cookie('session_id', session_id, httponly=True)
+
+    return res
 
 @auth_bp.route('/reset_password', methods=["PUT"])
 def reset_password():
@@ -76,6 +86,7 @@ def verify_session():
         status_code = 401
 
     res = make_response(jsonify(response), status_code)
+
     if res.status_code == 401:
         res.set_cookie("session_id", "", expires=0)
 
