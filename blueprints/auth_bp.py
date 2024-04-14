@@ -22,8 +22,9 @@ def register():
         status_code = 400 
 
     res = make_response(jsonify(response), status_code)
-    res.set_cookie('user', email)
-    res.set_cookie('session_id', session_id, httponly=True)
+    res.set_cookie('user', email, domain='174.138.49.160/', path='/')
+    res.set_cookie('session_id', session_id, domain='174.138.49.160/', path='/', httponly=True)
+
     
     return res
 
