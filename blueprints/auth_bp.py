@@ -44,7 +44,7 @@ def login():
 def reset_password():
     data = request.json
     email = data.get('email')    
-    new_password = request.args.get('new_password')
+    new_password = data.get('new_password')
 
     result, message = auth_manager.reset_password(email, new_password)
 
@@ -56,3 +56,27 @@ def reset_password():
         status_code = 400 
 
     return make_response(jsonify(response), status_code)
+
+@auth_bp.route('/verify_session', methods=["GET"])
+def verify_session():
+    user = request.cookies.get('user')
+    session_id = request.cookies.get('session_id')
+
+    if not user or not session_id:
+        response = {"success": False, "message": "User or session ID missing"}
+        return make_response(jsonify(response), 400)  # Bad request
+    
+    result = auth_manager.verify_session(session_id, user)
+
+    if result:
+        response = {"success": True, "message": "session id was correct"}
+        status_code = 200
+    else:
+        response = {"success": True, "message": "session id was incorrect"}
+        status_code = 401
+
+    res = make_response(jsonify(response), status_code)
+    if res.status_code == 401:
+        res.set_cookie("session_id", "", expires=0)
+
+    return res

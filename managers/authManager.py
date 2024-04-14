@@ -1,8 +1,10 @@
-import bcrypt
 from pymongo.mongo_client import MongoClient
 from dbClient import oauth_key
 from managers.oauth import OAuth
+from typing import Union
 import re
+import uuid
+import bcrypt
 
 class AuthManager:
 
@@ -43,6 +45,58 @@ class AuthManager:
         encoded = password.encode('utf-8')
         return bcrypt.checkpw(encoded, hash)
     
+    def verify_session(self, session_id: str, user: str) -> bool:
+        """
+        Checks to see if the session_id is valid
+
+        Parameters:
+            session_id (str): A session_id which should be supplied by a http-only cookie
+            user(str): The email of the user whose session_id we are checking
+
+        Returns:
+            bool: True if the given session_id matches the one in the database
+        """
+        try:
+            db = self.client["passManager"]
+            id = db.passwords.find_one({"user" : user})
+
+            if not id:
+                return False
+            
+            if id["session_id"] != session_id:
+                return False
+            
+        except Exception as e:
+            return False
+        
+        return True
+    
+    def new_session(self, user: str) -> Union[bool, str]:
+        """
+        Creates a new session in the database
+
+        Parameters:
+            session_id (str): A session_id which should be supplied by a http-only cookie
+            user(str): The email of the user whose session_id we are checking
+
+        Returns:
+            Union[bool, str]: True if the given session_id matches the one in the database
+                                If the database operation was successful then the new session id is also returned
+        """
+        db = self.client["passManager"]
+        id = db.passwords.find_one({"user" : user})
+        new_id = uuid.uuid4()
+        operation = {"$set": {"session_id": new_id}}
+
+        if not id:
+            return False
+        
+        try:
+            db.passwords.update_one({"user" : user}, operation)
+            return True, new_id
+        except Exception as e:
+            return False, "Failed to create new uuid: " + str(e)
+
     def add_user(self, email: str, password: str) -> tuple[bool, str]:
         """
         Creates a new user and adds an entry for them in the database
@@ -57,7 +111,8 @@ class AuthManager:
         """
         o_auth = OAuth(self.client, oauth_key)
         hashed_pass = self.hash_password(password)
-        operation = {"user" : email, "password" : hashed_pass, "OAuth_key" : o_auth.create_otp_key(), "accounts" : {}}
+        operation = {"user" : email, "password" : hashed_pass, "OAuth_key" : o_auth.create_otp_key(),
+                      "accounts" : {}, "session_id" : str(uuid.uuid4())}
 
         pattern = "^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$"
         valid = re.match(pattern, email) # input validaiton on the email
@@ -77,7 +132,7 @@ class AuthManager:
         except Exception as e:
             return False, "User registration failed: " + str(e)
         
-        return True, "Use successfully created"
+        return True, "User successfully created"
     
     def login(self, email: str, password: str) -> tuple[bool, str]:
         """
@@ -94,7 +149,7 @@ class AuthManager:
         """
         try:
             db = self.client["passManager"]
-            hashed_pass = db.passwords.find_one({"user" : email}, {"password" : 1, "_id" : 0})
+            hashed_pass = db.passwords.find_one({"user" : email}, {"password" : 1, "session_id": 1, "_id" : 0})
 
             if hashed_pass == None: # Trips when the user doesn't exist
                 return False, "User doesn't exist"
