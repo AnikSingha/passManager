@@ -13,9 +13,7 @@ app.register_blueprint(oauth_bp, url_prefix="/oauth")
 
 @app.route('/')
 def home():
-    response = make_response("<h1>Testin</h1>")
-    response.set_cookie('user', 'anik@gmail.com', samesite="None")
-    return response
+    return "Testing"
 
 if __name__ == "__main__":
     app.run()
