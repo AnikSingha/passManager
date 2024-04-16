@@ -25,8 +25,8 @@ def register():
     expiration_date = datetime.datetime.now() + datetime.timedelta(days=3)
 
     res = make_response(jsonify(response), status_code)
-    res.set_cookie('user', email, samesite=True, secure=True, expires=expiration_date)
-    res.set_cookie('session_id', session_id, httponly=True, samesite=True, secure=True, expires=expiration_date)
+    res.set_cookie('user', email, samesite=True, secure=True, expires=expiration_date, domain='.aniksingha.com')
+    res.set_cookie('session_id', session_id, httponly=True, samesite=True, secure=True, expires=expiration_date, domain='.aniksingha.com')
 
     
     return res
@@ -51,8 +51,8 @@ def login():
     res = make_response(jsonify(response), status_code)
     expiration_date = datetime.datetime.now() + datetime.timedelta(days=3)
 
-    res.set_cookie('user', email, samesite=True, secure=True, expires=expiration_date)
-    res.set_cookie('session_id', session_id, httponly=True, samesite=True, secure=True, expires=expiration_date)
+    res.set_cookie('user', email, samesite=True, secure=True, expires=expiration_date, domain='.aniksingha.com')
+    res.set_cookie('session_id', session_id, httponly=True, samesite=True, secure=True, expires=expiration_date, domain='.aniksingha.com')
 
     return res
 
@@ -94,6 +94,6 @@ def verify_session():
     res = make_response(jsonify(response), status_code)
 
     if res.status_code == 401:
-        res.set_cookie("session_id", "", expires=0)
+        res.set_cookie("session_id", "", expires=0, domain='.aniksingha.com')
 
     return res
