@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response
 from managers.authManager import AuthManager
 from dbClient import client
+import datetime
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -21,9 +22,11 @@ def register():
         response = {"success": False, "message": message}
         status_code = 400 
 
+    expiration_date = datetime.datetime.now() + datetime.timedelta(days=3)
+
     res = make_response(jsonify(response), status_code)
-    res.set_cookie('user', email, domain='174.138.49.160/', path='/')
-    res.set_cookie('session_id', session_id, domain='174.138.49.160/', path='/', httponly=True)
+    res.set_cookie('user', email, samesite=None, secure=True, expires=expiration_date)
+    res.set_cookie('session_id', session_id, httponly=True, samesite=None, secure=True, expires=expiration_date)
 
     
     return res
@@ -44,10 +47,12 @@ def login():
         status_code = 400 
 
     _ , session_id = auth_manager.new_session(email)
-    res = make_response(jsonify(response), status_code)
 
-    res.set_cookie('user', email)
-    res.set_cookie('session_id', session_id, httponly=True)
+    res = make_response(jsonify(response), status_code)
+    expiration_date = datetime.datetime.now() + datetime.timedelta(days=3)
+
+    res.set_cookie('user', email, samesite='None', secure=True, expires=expiration_date)
+    res.set_cookie('session_id', session_id, httponly=True, samesite='None', secure=True, expires=expiration_date)
 
     return res
 

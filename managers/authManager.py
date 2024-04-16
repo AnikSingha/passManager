@@ -85,8 +85,10 @@ class AuthManager:
         """
         db = self.client["passManager"]
         id = db.passwords.find_one({"user" : user})
-        new_id = uuid.uuid4()
+        new_id = str(uuid.uuid4())
         operation = {"$set": {"session_id": new_id}}
+
+        print(new_id)
 
         if not id:
             return False
