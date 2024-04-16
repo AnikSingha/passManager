@@ -1,4 +1,4 @@
-from flask import Flask, make_response
+from flask import Flask
 from flask_cors import CORS
 from blueprints.auth_bp import auth_bp
 from blueprints.pass_bp import pass_bp
