@@ -88,7 +88,7 @@ def verify_session():
         response = {"success": True, "message": "session id was correct"}
         status_code = 200
     else:
-        response = {"success": True, "message": "session id was incorrect"}
+        response = {"success": False, "message": "session id was incorrect"}
         status_code = 401
 
     res = make_response(jsonify(response), status_code)
