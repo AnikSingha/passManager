@@ -25,8 +25,8 @@ def register():
     expiration_date = datetime.datetime.now() + datetime.timedelta(days=3)
 
     res = make_response(jsonify(response), status_code)
-    res.set_cookie('user', email, secure=True, expires=expiration_date, domain='.aniksingha.com')
-    res.set_cookie('session_id', session_id, httponly=True, secure=True, expires=expiration_date, domain='.aniksingha.com')
+    res.set_cookie('user', email, secure=True, expires=expiration_date, domain='.aniksingha.com', samesite='None')
+    res.set_cookie('session_id', session_id, httponly=True, secure=True, expires=expiration_date, domain='.aniksingha.com', samesite='None')
 
     
     return res
@@ -51,8 +51,8 @@ def login():
     res = make_response(jsonify(response), status_code)
     expiration_date = datetime.datetime.now() + datetime.timedelta(days=3)
 
-    res.set_cookie('user', email, secure=True, expires=expiration_date, domain='.aniksingha.com')
-    res.set_cookie('session_id', session_id, httponly=True, secure=True, expires=expiration_date, domain='.aniksingha.com')
+    res.set_cookie('user', email, httponly=True, secure=True, expires=expiration_date, domain='.aniksingha.com', samesite='None')
+    res.set_cookie('session_id', session_id, httponly=True, secure=True, expires=expiration_date, domain='.aniksingha.com', samesite='None')
 
     return res
 
@@ -73,7 +73,7 @@ def reset_password():
 
     return make_response(jsonify(response), status_code)
 
-@auth_bp.route('/verify_session', methods=["GET"])
+@auth_bp.route('/verify_session', methods=["POST"])
 def verify_session():
     user = request.cookies.get('user')
     session_id = request.cookies.get('session_id')
@@ -94,6 +94,30 @@ def verify_session():
     res = make_response(jsonify(response), status_code)
 
     if res.status_code == 401:
-        res.set_cookie("session_id", "", expires=0, domain='.aniksingha.com')
+        res.delete_cookie('user')
+        res.delete_cookie('session_id')
 
     return res
+
+@auth_bp.route('/get_cookies', methods=["GET"])
+def get_cookies():
+    user = request.cookies.get('user')
+    session_id = request.cookies.get('session_id')
+
+    if not user or not session_id:
+        response = {"success": False, "message": "User or session didn't exist"}
+        status_code = 401
+    else:
+        response = {"success": True, "message": "Success","user": user, "session_id": session_id}
+        status_code = 200
+
+    return make_response(jsonify(response), status_code)
+
+@auth_bp.route('/delete_cookies', methods=["DELETE"])
+def delete_cookies():
+    response = make_response(jsonify({"success": True, "message": "Cookies deleted"}))
+
+    response.delete_cookie('user', secure=True, domain='.aniksingha.com', samesite='None')
+    response.delete_cookie('session_id', secure=True, domain='.aniksingha.com', samesite='None')
+
+    return response
